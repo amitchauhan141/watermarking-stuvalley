@@ -2,119 +2,74 @@ import React, { useState } from "react";
 
 const ImageUploader = () => {
   const [image, setImage] = useState(null);
-  const [watermarkedImage, setWatermarkedImage] = useState("");
-  const [watermarkText, setWatermarkText] = useState("AUTHENTRACK");
+  const [watermarkedImageUrl, setWatermarkedImageUrl] = useState("");
+  const [originalHash, setOriginalHash] = useState("");
+  const [tamperImage, setTamperImage] = useState(null);
+  const [tamperResult, setTamperResult] = useState(null);
 
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
-  };
-
-  const handleWatermark = async () => {
-    if (!image) {
-      alert("Please select an image.");
-      return;
-    }
-
+  const handleWatermarkUpload = async () => {
     const formData = new FormData();
-    formData.append("file", image);
-    formData.append("watermark_text", watermarkText); // Send text watermark
+    formData.append("image", image);
 
     try {
-      const response = await fetch("http://127.0.0.1:5001/upload", {
+      const res = await fetch("http://127.0.0.1:5001/upload-image", {
         method: "POST",
         body: formData,
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setWatermarkedImage(data.download_url);
-      } else {
-        alert("Error: " + data.error);
-      }
-    } catch (error) {
+      const data = await res.json();
+      setWatermarkedImageUrl(data.image_url);
+      setOriginalHash(data.image_hash);
+      alert("Watermark embedded successfully!");
+    } catch (err) {
       alert("Upload failed.");
-      console.error("Error:", error);
+      console.error(err);
+    }
+  };
+
+  const handleTamperCheck = async () => {
+    const formData = new FormData();
+    formData.append("image", tamperImage);
+    formData.append("original_hash", originalHash);
+
+    try {
+      const res = await fetch("http://127.0.0.1:5001/check-tamper", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      setTamperResult(data.tampered);
+    } catch (err) {
+      alert("Tamper check failed.");
+      console.error(err);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Upload Image & Apply Watermark</h2>
+    <div style={{ textAlign: "center", marginTop: "30px" }}>
+      <h2>Upload Image for Invisible Watermarking</h2>
+      <input type="file" onChange={(e) => setImage(e.target.files[0])} />
+      <br />
+      <button onClick={handleWatermarkUpload}>Upload & Watermark</button>
 
-      <input type="file" onChange={handleImageChange} style={styles.fileInput} />
+      {watermarkedImageUrl && (
+        <>
+          <h3>Watermarked Image</h3>
+          <img src={watermarkedImageUrl} alt="watermarked" width="300" />
+          <p>SHA256 Hash: {originalHash}</p>
 
-      <input
-        type="text"
-        value={watermarkText}
-        onChange={(e) => setWatermarkText(e.target.value)}
-        style={styles.textInput}
-        placeholder="Enter watermark text"
-      />
+          <h3>Check for Image Tampering</h3>
+          <input type="file" onChange={(e) => setTamperImage(e.target.files[0])} />
+          <button onClick={handleTamperCheck}>Check Tampering</button>
 
-      <button onClick={handleWatermark} style={styles.button}>
-        Apply Watermark
-      </button>
-
-      {watermarkedImage && (
-        <div>
-          <h3 style={styles.watermarkLabel}>Watermarked Image:</h3>
-          <img src={watermarkedImage} alt="Watermarked" style={styles.image} />
-          <a href={watermarkedImage} download="watermarked_image.jpg">
-            <button style={styles.button}>Download Image</button>
-          </a>
-        </div>
+          {tamperResult !== null && (
+            <p style={{ color: tamperResult ? "red" : "green" }}>
+              Image is {tamperResult ? "Tampered" : "Authentic"}
+            </p>
+          )}
+        </>
       )}
     </div>
   );
-};
-
-// 🔹 Style object to match your previous UI
-const styles = {
-  container: {
-    textAlign: "center",
-    backgroundColor: "#121212",
-    color: "white",
-    padding: "20px",
-    borderRadius: "10px",
-    width: "80%",
-    margin: "auto",
-  },
-  title: {
-    fontSize: "24px",
-    fontWeight: "bold",
-  },
-  fileInput: {
-    margin: "10px 0",
-    padding: "10px",
-  },
-  textInput: {
-    width: "80%",
-    padding: "10px",
-    margin: "10px 0",
-    borderRadius: "5px",
-    border: "1px solid gray",
-  },
-  button: {
-    backgroundColor: "#000",
-    color: "white",
-    padding: "10px 20px",
-    borderRadius: "5px",
-    border: "none",
-    cursor: "pointer",
-    margin: "10px",
-  },
-  watermarkLabel: {
-    fontSize: "18px",
-    fontWeight: "bold",
-    marginTop: "20px",
-  },
-  image: {
-    width: "100%",
-    maxWidth: "400px",
-    borderRadius: "10px",
-    margin: "10px 0",
-  },
 };
 
 export default ImageUploader;
