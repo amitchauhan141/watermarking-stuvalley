@@ -1,6 +1,6 @@
 # 🔒 AuthenTrack: AI-Persistent Watermarking & Tamper Detection System
 
-AuthenTrack is a web-based application that provides AI-Persistent watermarking and tamper detection for digital images. Built during my internship at [Stuvally Technology](https://www.linkedin.com/company/stuvaly/), this tool ensures content authenticity by embedding invisible watermarks using DCT (Discrete Cosine Transform) and detecting unauthorized alterations in images.
+AuthenTrack is a web-based application that provides AI-Persistent watermarking and tamper detection for digital images. Built during my internship at [Stuvally Technology](https://www.linkedin.com/company/stuvalley/posts/?feedView=all), this tool ensures content authenticity by embedding invisible watermarks using DCT (Discrete Cosine Transform) and detecting unauthorized alterations in images.
 
 ## Features
 
